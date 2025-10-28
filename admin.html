@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GemAura Admin - Order History</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="mb-8 pb-4 border-b border-gray-200">
+            <h1 class="text-3xl sm:text-4xl font-serif font-bold text-gray-800">
+                GemAura <span class="text-purple-600">| Admin Panel</span>
+            </h1>
+        </header>
+
+        <main id="admin-order-container" class="space-y-4">
+            <p class="text-gray-500 text-center py-10">Loading orders...</p>
+        </main>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // IMPORTANT: Use the EXACT SAME Firebase config as in index.html
+        const firebaseConfig = {
+            apiKey: "AIzaSyDTSRVpWmK5sukVgLhwRlZcgibwMKXB56Y",
+            authDomain: "freshmart-shop.firebaseapp.com",
+            projectId: "freshmart-shop",
+            storageBucket: "freshmart-shop.firebasestorage.app",
+            messagingSenderId: "1008427853037",
+            appId: "1:1008427853037:web:f6028707071e0ec63718e4",
+            measurementId: "G-7L837ZYE5J"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function fetchOrders() {
+            const orderContainer = document.getElementById('admin-order-container');
+            try {
+                // Create a query to get documents from the "orders" collection, ordered by creation date
+                const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    orderContainer.innerHTML = '<p class="text-gray-500 text-center py-10">No orders have been placed yet.</p>';
+                    return;
+                }
+
+                let ordersHtml = '';
+                querySnapshot.forEach((doc) => {
+                    const order = doc.data();
+                    const orderDate = order.createdAt.toDate();
+                    ordersHtml += `
+                        <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+                            <div class="flex flex-col sm:flex-row justify-between sm:items-start gap-2">
+                                <div>
+                                    <p class="font-bold text-lg">${order.customer.name}</p>
+                                    <p class="text-sm text-gray-600">${order.customer.address}</p>
+                                    <p class="text-sm text-gray-600">${order.customer.phone}</p>
+                                </div>
+                                <div class="text-left sm:text-right">
+                                    <p class="font-semibold">${orderDate.toLocaleDateString()} at ${orderDate.toLocaleTimeString()}</p>
+                                    <p class="text-lg font-bold text-purple-600">$${order.total.toFixed(2)}</p>
+                                </div>
+                            </div>
+                            <hr class="my-3">
+                            <p class="font-semibold text-sm mb-1">Items:</p>
+                            <ul class="list-disc list-inside text-sm text-gray-700">
+                                ${order.items.map(item => `<li>${item.name} (x${item.quantity})</li>`).join('')}
+                            </ul>
+                        </div>`;
+                });
+                orderContainer.innerHTML = ordersHtml;
+
+            } catch (error) {
+                console.error("Error fetching orders: ", error);
+                orderContainer.innerHTML = '<p class="text-red-500 text-center py-10">Failed to load orders. Check console for details.</p>';
+            }
+        }
+
+        fetchOrders();
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GemAura - Exquisite Jewellery</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for a clean, modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- Body & Background --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            /* A subtle, elegant gradient background */
+            background-color: #F8F7FC;
+            background-image: linear-gradient(180deg, #F8F7FC 0%, #EAE7F5 100%);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale; 
+        }
+
+        /* --- Typography --- */
+        .font-serif {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* --- Custom Scrollbar --- */
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #EAE7F5; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #A89AC8; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6D28D9; }
+
+        /* --- Modal Animations --- */
+        .modal-enter { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* --- Loader Animation --- */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #6D28D9;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- Category Button Styling --- */
+        .category-btn {
+            transition: all 0.3s ease; /* Smoother transition for all buttons */
+        }
+        
+        .category-btn.active {
+            background-color: #4C1D95; /* Dark Purple */
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px); /* Lifts the button slightly */
+        }
+
+        /* * THE FIX: This rule tells the active button to keep its purple background
+        * even when you hover over it, overriding the default hover effect.
+        */
+        .category-btn.active:hover {
+            background-color: #4C1D95; /* Stays Dark Purple */
+        }
+
+        /* --- Product Card Enhancements --- */
+        .product-card {
+            border: 1px solid #EAE7F5;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .product-card:hover {
+            /* Adds a nice purple glow and lifts the card on hover */
+            box-shadow: 0 10px 20px -5px rgba(109, 40, 217, 0.2), 0 4px 8px -2px rgba(109, 40, 217, 0.1);
+            transform: translateY(-5px);
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Main Container -->
+    <div id="app" class="container mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
+            <div class="flex items-center">
+                <img src="https://images.scalebranding.com/ag-or-ga-logo-3d1bba85-7ab0-4378-89f4-0b746fff08e0.jpg" alt="GemAura Logo" class="h-15 w-12 mr-3 object-cover">
+                <h1 class="text-3xl sm:text-4xl font-serif font-bold text-gray-800">
+                    GemAura<span class="text-purple-600">.</span>
+                </h1>
+            </div>
+            <button id="open-cart-btn" class="relative rounded-full p-2 hover:bg-gray-200 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                <span id="cart-count" class="absolute -top-1 -right-1 bg-purple-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+            </button>
+        </header>
+
+        <!-- Product Grid -->
+        <main>
+            <div class="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
+                 <h2 class="text-2xl font-serif font-bold text-gray-800">Signature Pieces</h2>
+                 <!-- Category Filters -->
+                <div id="category-filters" class="flex flex-wrap gap-2">
+                    <button class="category-btn active px-4 py-2 text-sm rounded-full bg-white border border-gray-300 hover:bg-gray-100 transition" data-category="All">All</button>
+                    <button class="category-btn px-4 py-2 text-sm rounded-full bg-white border border-gray-300 hover:bg-gray-100 transition" data-category="Chains">Chains</button>
+                    <button class="category-btn px-4 py-2 text-sm rounded-full bg-white border border-gray-300 hover:bg-gray-100 transition" data-category="Earrings">Earrings</button>
+                    <button class="category-btn px-4 py-2 text-sm rounded-full bg-white border border-gray-300 hover:bg-gray-100 transition" data-category="Bracelets">Bracelets</button>
+                    <button class="category-btn px-4 py-2 text-sm rounded-full bg-white border border-gray-300 hover:bg-gray-100 transition" data-category="Anklets">Anklets</button>
+                    <button class="category-btn px-4 py-2 text-sm rounded-full bg-white border border-gray-300 hover:bg-gray-100 transition" data-category="Rings">Rings</button>
+                </div>
+            </div>
+           
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Products will be dynamically inserted here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals (Styled for GemAura) -->
+    <!-- Shopping Cart Modal -->
+    <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-end hidden z-50">
+        <div id="cart-modal-content" class="w-full max-w-md bg-white h-full flex flex-col shadow-2xl modal-enter">
+            <div class="flex justify-between items-center p-4 border-b"><h3 class="text-xl font-semibold">Your Cart</h3><button id="close-cart-btn" class="p-2 rounded-full hover:bg-gray-200"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button></div>
+            <div id="cart-items" class="flex-grow p-4 overflow-y-auto custom-scrollbar"><p class="text-gray-500 text-center mt-8">Your cart is empty.</p></div>
+            <div class="p-4 border-t bg-gray-50">
+                <div class="flex justify-between items-center mb-4"><span class="text-lg font-medium">Subtotal</span><span id="cart-total" class="text-xl font-bold text-gray-800">$0.00</span></div>
+                <button id="checkout-btn" class="w-full bg-purple-600 text-white font-bold py-3 rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-300">Proceed to Checkout</button>
+            </div>
+        </div>
+    </div>
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 sm:p-8 w-full max-w-lg modal-enter">
+            <div class="flex justify-between items-center mb-6"><h3 class="text-2xl font-semibold">Shipping Details</h3><button id="close-checkout-btn" class="p-2 rounded-full hover:bg-gray-200"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button></div>
+            <form id="checkout-form">
+                <div class="space-y-4">
+                    <div><label for="name" class="block text-sm font-medium text-gray-700">Full Name</label><input type="text" id="name" name="name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"></div>
+                    <div><label for="address" class="block text-sm font-medium text-gray-700">Address</label><input type="text" id="address" name="address" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"></div>
+                    <div><label for="phone" class="block text-sm font-medium text-gray-700">Phone Number</label><input type="tel" id="phone" name="phone" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"></div>
+                </div>
+                <button type="submit" id="place-order-btn" class="mt-8 w-full bg-purple-600 text-white font-bold py-3 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center">Place Order</button>
+            </form>
+        </div>
+    </div>
+    <!-- Order Confirmation Modal -->
+    <div id="confirmation-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 sm:p-8 w-full max-w-lg text-center modal-enter">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-purple-100"><svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>
+            <h3 class="text-2xl font-semibold mt-4">Order Placed Successfully!</h3>
+            <p class="text-gray-600 mt-2">Thank you for your purchase. Your order will be delivered soon.</p>
+            <div id="order-summary" class="text-left bg-gray-50 p-4 rounded-lg mt-6"></div>
+            <button id="close-confirmation-btn" class="mt-6 w-full bg-purple-600 text-white font-bold py-3 rounded-lg hover:bg-purple-700 transition-colors">Continue Shopping</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Your existing Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDTSRVpWmK5sukVgLhwRlZcgibwMKXB56Y",
+            authDomain: "freshmart-shop.firebaseapp.com",
+            projectId: "freshmart-shop",
+            storageBucket: "freshmart-shop.firebasestorage.app",
+            messagingSenderId: "1008427853037",
+            appId: "1:1008427853037:web:f6028707071e0ec63718e4",
+            measurementId: "G-7L837ZYE5J"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let cart = [];
+            // --- NEW: GemAura Product List ---
+            const products = [
+                // Chains
+                { id: 1, name: 'Serpent Gold Chain', price: 180, image: 'https://5.imimg.com/data5/ANDROID/Default/2022/4/QI/WI/EJ/54113054/product-jpeg.jpg', category: 'Chains' },
+                { id: 2, name: 'Silver Rope Necklace', price: 120, image: 'https://www.astleyclarke.com/media/catalog/product/5/7/57060snon.jpg?width=768&height=768&optimize=low&fit=bounds', category: 'Chains' },
+                { id: 3, name: 'Rose Gold Link Chain', price: 250, image: 'https://www.giva.co/cdn/shop/files/PD0234_5.jpg?v=1711627711&width=1946', category: 'Chains' },
+                { id: 4, name: 'Pearl Pendant Necklace', price: 150, image: 'https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRx5s43CtihS7ucN8saAym8GUMR2aVZbY50rETiiQZVsy1K6b0DTFE15qxTybHq0EGFvIQwmilOB6HQrhdnARm1gGBm-Ykof8aVDvdCiazTGmtxRSFSW0We', category: 'Chains' },
+                { id: 5, name: 'Minimalist Box Chain', price: 95, image: 'https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcSxweRZGFoRnzWT6g615IaL_Z3Lhbq2jWPYmz1CsdDeboeQAuCHjpJAL53BAr8Lq5d75pUVzSDRJnj0--AGhyWD5QZUKgSdI39tAu2OmNqJ', category: 'Chains' },
+                { id: 6, name: 'Heavy Cuban Link', price: 450, image: 'https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQJ1Xol05lfNaBPnFIaYBve7ermxEOfKDE4Hw0UUSgAf855aRjNqotQVrxRWo7a0F3ESlb9fRKjQLnl3RQK2uz2LZ7w7Re3vzDdlP7SaPo', category: 'Chains' },
+                { id: 7, name: 'Turquoise Bead Chain', price: 135, image: 'https://www.moyerfinejewelers.com/cdn/shop/files/newss2_ef374901-6ea4-4c85-9330-7797576cc24a.jpg?v=1701452591', category: 'Chains' },
+                { id: 8, name: 'Figaro Silver Chain', price: 110, image: 'https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRP022QkbJfXAgfohD7rXzcGaQ7zWR7ujiDUO0RPBZK8WvFPbQDJRHy-Pjjk9UDb6jfA-d1HUrt1rcbyP6nGT2XHYoLXITh1cnEcN4UPEo', category: 'Chains' },
+                { id: 9, name: 'Black Onyx Necklace', price: 165, image: 'https://www.deandavidson.com/cdn/shop/products/N100-G-BO-1_4eab25cd-4054-46fd-b791-c8b61d165c19.jpg?v=1692117326', category: 'Chains' },
+                { id: 10, name: 'Sun Pendant Locket', price: 140, image: 'https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcReilBC46MyhdpOl8olgLitOVZjc9RznPEXcoQe0zafPV4dNwAZgW2r_4AJJS2GqcPHxpYUnQxwctl55BqvnWA4l5i_EckyozJgEi3cYaws', category: 'Chains' },
+                // Earrings
+                { id: 11, name: 'Diamond Studs (1ct)', price: 950, image: 'https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcQXbV6FsZKA1r1empxQ6Cqo47yIvjpmGZvL3k12hsizTB8QcRzxFo5G3QT12rpveQanVyju2qWXT9LgxTIw09BpZBCwHJzu11RkUhm0k4z8f4KrH65yTUJnGXFd', category: 'Earrings' },
+                { id: 12, name: 'Classic Gold Hoops', price: 125, image: 'https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcSuiBLwIL3izE09sqR1DGHSqP6yhwipKaNqH918gl13n9V4YCTOP8of_nzkRZEXPvD-F7mLehMC7dWd9tvZP_fdVpI17A8p', category: 'Earrings' },
+                { id: 13, name: 'Emerald Drop Earrings', price: 320, image: 'https://www.curiocottage.in/cdn/shop/files/FEC135_1_effe77ad-fe9b-410f-a70e-6b4df34c7684.jpg?v=1754040224', category: 'Earrings' },
+                { id: 14, name: 'Silver Feather Dangles', price: 85, image: 'https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcTNFp2TIYB90HptKUr3Qs-EWwFoDZhSXQYdjVxsrbijpDyd11Nh9HGA3M9QWRgpLS2ok1b7XV9aRRut5BDVp0gzlIU1UKB6ynAsqsqhq0pS', category: 'Earrings' },
+                { id: 15, name: 'Ruby Cluster Earrings', price: 450, image: 'https://jewelsbymudrika.com/wp-content/uploads/2024/02/MDES17-Ruby-cluster-92.5-silver-studs-scaled.jpeg', category: 'Earrings' },
+                { id: 16, name: 'Pearl Drop Earrings', price: 160, image: 'https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcTvl1q3tkwlCNELEWhyj2H6uLPVDrbpKz83uOuxccmHBwVNG-oQl-hP-hDf4TMEERiYvql-h1lWAuji-kZMLdw3f9hfRx8PcSaNjCE6P6Q', category: 'Earrings' },
+                { id: 17, name: 'Sapphire Halo Studs', price: 550, image: 'https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRqjQdfT3HClzmqatvGU61bLyfLP1e6WJt50wjsKuyB8UaZv6713aT_h9OLuhXpIDRTOfSdJhfz32RQJzHz8QJgi9zcfzrj-BFYAjEONb7daE4BkzC9vek5bw', category: 'Earrings' },
+                { id: 18, name: 'Rose Gold Knots', price: 190, image: 'https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcTGiPYxfevuBlIfs0-m__0qxTVZA4yZxLFy0vxrDsFVp19yHYcxYUpHCWhCqbEpDO4d6SbNtH34Cx4KNoGgFHVkLYsoGQ7kL2sULRspgGGEYppXlOA5hcgLng', category: 'Earrings' },
+                { id: 19, name: 'Geometric Silver Studs', price: 75, image: 'https://aadyaa.com/cdn/shop/files/DSC00449copy.jpg?v=1713787068', category: 'Earrings' },
+                { id: 20, name: 'Opal Teardrop Earrings', price: 280, image: 'https://i.etsystatic.com/21445023/r/il/58407f/6174870929/il_fullxfull.6174870929_am4s.jpg', category: 'Earrings' },
+                // Bracelets
+                { id: 21, name: 'Gold Bangle Set', price: 210, image: 'https://www.viraasi.com/cdn/shop/products/VIR1191_5.jpg?v=1672474826', category: 'Bracelets' },
+                { id: 22, name: 'Silver Tennis Bracelet', price: 350, image: 'https://assets.myntassets.com/w_412,q_30,dpr_3,fl_progressive,f_webp/assets/images/29164152/2024/4/24/19374587-0c8f-44a5-9288-ee60fea33c7b1713956714189925SterlingSilverCubicZirconiaTimelessTennisBracelet1.jpg', category: 'Bracelets' },
+                { id: 23, name: 'Leather Charm Bracelet', price: 90, image: 'https://rukminim2.flixcart.com/image/480/640/xif0q/bangle-bracelet-armlet/9/n/g/free-2-4-na-4-uni-6-university-trendz-original-imahcqcckphfzx9c.jpeg?q=90', category: 'Bracelets' },
+                { id: 24, name: 'Rose Gold Cuff', price: 180, image: 'https://assets.myntassets.com/w_412,q_30,dpr_3,fl_progressive,f_webp/assets/images/25188406/2023/9/27/0165c910-ce7f-4d73-b58e-8df3ab7cbfe11695797795949JewelsGalaxyWomenRoseGoldWhiteAmericanDiamondRoseGold-Plated1.jpg', category: 'Bracelets' },
+                { id: 25, name: 'Amethyst Bead Bracelet', price: 110, image: 'https://shubhanjalistore.com/wp-content/uploads/2022/05/Shubhanjali-Amethyst-Faceted-Bracelet-1.jpg', category: 'Bracelets' },
+                { id: 26, name: 'Infinity Link Bracelet', price: 155, image: 'https://jokerandwitch.com/cdn/shop/products/8_ce765436-c035-40e9-9459-96a2d79119e4_720x.jpg?v=1637070387', category: 'Bracelets' },
+                { id: 27, name: 'Braided Gold Bracelet', price: 290, image: 'https://images-cdn.ubuy.co.in/66993934c7794b42af188bb8-charming-women-s-bracelets-jewelry.jpg', category: 'Bracelets' },
+                { id: 28, name: 'Men\'s Titanium Link', price: 170, image: 'https://www.thementhing.com/cdn/shop/files/the-men-thing-steel-bracelets-titan-13mm-pure-titanium-steel-bracelet-for-men-boy-8inch-1170968913.jpg?v=1755684487', category: 'Bracelets' },
+                { id: 29, name: 'Jasper Stone Bracelet', price: 95, image: 'https://www.scoutcuratedwears.com/cdn/shop/products/1be3209afc36a3b6570b64d6aba2a8cd-Scout_StoneStack_05581f58-3933-47c9-a26a-7c2b78a2a866.jpg?v=1530633973', category: 'Bracelets' },
+                { id: 30, name: 'Delicate Pearl Bracelet', price: 140, image: 'https://honeywillow.com/cdn/shop/files/francescabraceletmodel.jpg?v=1729349324&width=1946', category: 'Bracelets' },
+                // Anklets
+                { id: 31, name: 'Simple Silver Anklet', price: 65, image: 'https://imagescdn.jaypore.com/img/app/product/3/39736526-15442790.jpg', category: 'Anklets' },
+                { id: 32, name: 'Gold Figaro Anklet', price: 95, image: 'https://i.etsystatic.com/6163739/r/il/dbf54e/2280599061/il_570xN.2280599061_lx7j.jpg', category: 'Anklets' },
+                { id: 33, name: 'Beaded Beach Anklet', price: 45, image: 'https://i.etsystatic.com/23303075/r/il/487c8c/3163154929/il_570xN.3163154929_tlv8.jpg', category: 'Anklets' },
+                { id: 34, name: 'Rose Gold Heart Anklet', price: 85, image: 'https://i.etsystatic.com/17631060/r/il/5a4589/1887993073/il_570xN.1887993073_71kw.jpg', category: 'Anklets' },
+                { id: 35, name: 'Double Chain Anklet', price: 75, image: 'https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcR7-uc54Jvg163bcSLNwznBgDwyo9b0OdH5LJ-Il-HkpO-iooqQcAokQM0c_cb6y3P15lKLoNrOLNKkr04zwtH-9eo1MH0WERQGC2vXbK4', category: 'Anklets' },
+                { id: 36, name: 'Star Charm Anklet', price: 60, image: 'https://i.etsystatic.com/23841683/r/il/f53691/5980837565/il_fullxfull.5980837565_q169.jpg', category: 'Anklets' },
+                { id: 37, name: 'Crystal Drop Anklet', price: 90, image: 'https://cdn.notonthehighstreet.com/fs/8b/d5/a0bf-d1e6-4dbf-9fa7-19be89bad1e1/original_sterling-silver-crystal-bead-drop-dangle-anklet.jpg', category: 'Anklets' },
+                { id: 38, name: 'Leather Cord Anklet', price: 35, image: 'https://i.ebayimg.com/thumbs/images/g/q-cAAOSwXbZemMs3/s-l1200.jpg', category: 'Anklets' },
+                { id: 39, name: 'Turquoise Bead Anklet', price: 55, image: 'https://rubans.in/cdn/shop/files/rubans-18k-gold-plated-stainlesssteel-tarnishfree-waterproof-turquoise-beads-star-anklet-anklet-1143856439.jpg?v=1755713836', category: 'Anklets' },
+                { id: 40, name: 'A Letter Anklet', price: 70, image: 'https://kenivira.co/cdn/shop/products/Kenivira-the-Letter-G-Initial-Anklet-6_1200x.jpg?v=1709281513', category: 'Anklets' },
+                // Rings
+                { id: 41, name: 'Solitaire Diamond Ring', price: 1200, image: 'https://www.abhikajewels.com/cdn/shop/products/LR1204f.jpg?v=1755447053', category: 'Rings' },
+                { id: 42, name: 'Gold Wedding Band', price: 300, image: 'https://www.candere.com/media/jewellery/images/GR00591__1.jpeg', category: 'Rings' },
+                { id: 43, name: 'Sapphire Engagement Ring', price: 1500, image: 'https://sfycdn.speedsize.com/d9acbe11-c0cc-4d19-a1ce-748a0fd38b05/https://www.miadonna.com/cdn/shop/articles/unnamed_fb75e687-ceeb-4b72-8d66-a544e3df0d4f_1600x.jpg?v=1711484967', category: 'Rings' },
+                { id: 44, 'name': 'Silver Signet Ring', price: 120, image: 'https://twistedpendant.com/cdn/shop/products/2_ab3af15f-b6da-4a01-aaf3-ccbe06948993.png?v=1748704963&width=1000', category: 'Rings' },
+                { id: 45, name: 'Rose Gold Eternity Band', price: 450, image: 'https://leomathild.com/cdn/shop/files/Alie_2800_-_1.jpg', category: 'Rings' },
+                { id: 46, name: 'Emerald Cut Accent Ring', price: 850, image: 'https://www.afrogem.co.za/cdn/shop/products/TimelessEmeraldCutTanzaniteandPetiteDiamondAccentRing3_300x300.jpg?v=1663325603', category: 'Rings' },
+                { id: 47, name: 'Minimalist Stacking Ring', price: 60, image: 'https://i.etsystatic.com/12605452/r/il/2f59aa/1720858480/il_570xN.1720858480_6f89.jpg', category: 'Rings' },
+                { id: 48, name: 'Opal Cocktail Ring', price: 280, image: 'https://www.amrrutam.com/cdn/shop/files/Screenshot2022-08-16at11.31.58PM.png?v=1752145531&width=2048', category: 'Rings' },
+                { id: 49, name: 'Men\'s Black Tungsten', price: 150, image: 'https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQqzxyZ4pQAEtstmwc3JG_WJbzyWmVVBxZJJFL-PGbX0PyGhvvdmQuQ6VrJcoOyEsBu79uaBD6xbvU9ptAyWWeCJjebuwSUmxwKo3i0vR8WKwv3dJvHITM69bc', category: 'Rings' },
+                { id: 50, name: 'Vintage Garnet Ring', price: 320, image: 'https://filigreejewelers.com/cdn/shop/products/IMG_1242-scaled.jpg?v=1673599032&width=1946', category: 'Rings' }
+            ];
+
+            const productGrid = document.getElementById('product-grid');
+            const cartCountEl = document.getElementById('cart-count');
+            const cartModal = document.getElementById('cart-modal');
+            const closeCartBtn = document.getElementById('close-cart-btn');
+            const openCartBtn = document.getElementById('open-cart-btn');
+            const cartItemsEl = document.getElementById('cart-items');
+            const cartTotalEl = document.getElementById('cart-total');
+            const checkoutBtn = document.getElementById('checkout-btn');
+            const checkoutModal = document.getElementById('checkout-modal');
+            const closeCheckoutBtn = document.getElementById('close-checkout-btn');
+            const checkoutForm = document.getElementById('checkout-form');
+            const confirmationModal = document.getElementById('confirmation-modal');
+            const closeConfirmationBtn = document.getElementById('close-confirmation-btn');
+            const orderSummaryEl = document.getElementById('order-summary');
+            const placeOrderBtn = document.getElementById('place-order-btn');
+            const categoryFilters = document.getElementById('category-filters');
+
+            // --- MODIFIED: Render products based on category ---
+            function renderProducts(category = 'All') {
+                const filteredProducts = category === 'All'
+                    ? products
+                    : products.filter(p => p.category === category);
+                
+                productGrid.innerHTML = filteredProducts.map(p => `
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
+                        <img src="${p.image}" alt="${p.name}" class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <h3 class="text-base font-semibold text-gray-800 h-12">${p.name}</h3>
+                            <p class="text-lg font-bold text-purple-600 mt-1">$${p.price.toFixed(2)}</p>
+                            <button class="add-to-cart-btn w-full mt-4 bg-gray-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors"
+                                data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>`).join('');
+            }
+            
+            function addToCart(id, name, price) { const i = cart.find(item => item.id === id); i ? i.quantity++ : cart.push({ id, name, price, quantity: 1 }); updateCartUI(); }
+            function removeFromCart(id) { const i = cart.findIndex(item => item.id === id); if (i > -1) { cart[i].quantity > 1 ? cart[i].quantity-- : cart.splice(i, 1); } updateCartUI(); }
+            function updateCartUI() { const totalItems = cart.reduce((s, i) => s + i.quantity, 0); cartCountEl.textContent = totalItems; if (cart.length === 0) { cartItemsEl.innerHTML = '<p class="text-gray-500 text-center mt-8">Your cart is empty.</p>'; checkoutBtn.disabled = true; } else { cartItemsEl.innerHTML = cart.map(i => `<div class="flex items-center justify-between py-3 border-b"><div class="flex items-center"><img src="${products.find(p=>p.id===i.id).image}" alt="${i.name}" class="w-16 h-16 object-cover rounded-md mr-4"><div><p class="font-semibold">${i.name}</p><p class="text-gray-600">$${i.price.toFixed(2)}</p></div></div><div class="flex items-center gap-3"><span class="font-bold">x ${i.quantity}</span><button class="remove-from-cart-btn text-red-500 hover:text-red-700 p-1" data-id="${i.id}"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button></div></div>`).join(''); checkoutBtn.disabled = false; } const totalCost = cart.reduce((s, i) => s + i.price * i.quantity, 0); cartTotalEl.textContent = `$${totalCost.toFixed(2)}`; }
+            
+            // --- EVENT LISTENERS ---
+            productGrid.addEventListener('click', e => { if (e.target.classList.contains('add-to-cart-btn')) { addToCart(parseInt(e.target.dataset.id), e.target.dataset.name, parseFloat(e.target.dataset.price)); } });
+            cartItemsEl.addEventListener('click', e => { const btn = e.target.closest('.remove-from-cart-btn'); if (btn) { removeFromCart(parseInt(btn.dataset.id)); } });
+            openCartBtn.addEventListener('click', () => cartModal.classList.remove('hidden'));
+            closeCartBtn.addEventListener('click', () => cartModal.classList.add('hidden'));
+            cartModal.addEventListener('click', e => { if (e.target === cartModal) cartModal.classList.add('hidden'); });
+            checkoutBtn.addEventListener('click', () => { cartModal.classList.add('hidden'); checkoutModal.classList.remove('hidden'); });
+            closeCheckoutBtn.addEventListener('click', () => checkoutModal.classList.add('hidden'));
+            checkoutModal.addEventListener('click', e => { if (e.target === checkoutModal) checkoutModal.classList.add('hidden'); });
+            closeConfirmationBtn.addEventListener('click', () => confirmationModal.classList.add('hidden'));
+
+            // NEW: Category filter event listener
+            categoryFilters.addEventListener('click', e => {
+                if (e.target.tagName === 'BUTTON') {
+                    document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    const category = e.target.dataset.category;
+                    renderProducts(category);
+                }
+            });
+
+            checkoutForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                placeOrderBtn.innerHTML = '<div class="loader"></div>';
+                placeOrderBtn.disabled = true;
+
+                const formData = new FormData(checkoutForm);
+                const name = formData.get('name');
+                const address = formData.get('address');
+                const phone = formData.get('phone');
+                const totalCost = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+                const newOrder = {
+                    customer: { name, address, phone },
+                    items: cart,
+                    total: totalCost,
+                    createdAt: new Date()
+                };
+
+                try {
+                    const docRef = await addDoc(collection(db, "orders"), newOrder);
+                    console.log("Document written with ID: ", docRef.id);
+                    orderSummaryEl.innerHTML = `<h4 class="font-semibold mb-2">Order Details</h4><p><strong>Name:</strong> ${name}</p><p><strong>Address:</strong> ${address}</p><hr class="my-2"><p><strong>Items:</strong></p><ul class="list-disc list-inside text-sm">${cart.map(item => `<li>${item.name} (x${item.quantity})</li>`).join('')}</ul><p class="font-bold mt-2 text-right">Total: $${totalCost.toFixed(2)}</p>`;
+                    checkoutModal.classList.add('hidden');
+                    confirmationModal.classList.remove('hidden');
+                    cart = [];
+                    checkoutForm.reset();
+                    updateCartUI();
+                } catch (error) {
+                    console.error("Error adding document: ", error);
+                    alert("There was an error placing your order. Please try again.");
+                } finally {
+                    placeOrderBtn.innerHTML = 'Place Order';
+                    placeOrderBtn.disabled = false;
+                }
+            });
+
+            // --- INITIALIZATION ---
+            renderProducts();
+            updateCartUI();
+        });
+    </script>
+</body>
+</html>
+
